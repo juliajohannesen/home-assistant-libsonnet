@@ -52,7 +52,6 @@ local utils = import "../../_utils.libsonnet";
     withWebUIURL(url): { webui_url: url },
   },
 
-
   detect: {
     stationary: {
       maxFrames: {
@@ -118,15 +117,20 @@ local utils = import "../../_utils.libsonnet";
           then std.join(",", mask)
           else mask,
       },
+      withThreshold(threshold): { threshold: threshold },
     },
 
     withFilters(filters): {
-      _filters:: utils.toArray(filters),
-      filters: { [filter._subject]: filter for filter in self._filters },
+      objects+: {
+        _filters:: utils.toArray(filters),
+        filters: { [filter._subject]: filter for filter in self._filters },
+      }
     },
     withFiltersMixin(mixin): {
-      _filters+:: utils.toArray(mixin),
-      filters: { [filter._subject]: filter for filter in self._filters },
+      objects+: {
+        _filters+:: utils.toArray(mixin),
+        filters: { [filter._subject]: filter for filter in self._filters },
+      }
     },
     
     withTracked(subjects): { objects+: { track: utils.toArray(subjects) } },
