@@ -110,4 +110,20 @@ local volumeMount = k.core.v1.volumeMount;
     + self.withDeploymentMixin(deployment.spec.template.spec.withVolumesMixin([
       volume.fromHostPath("dbus", "/run/dbus"),
     ])),
+  
+  withZigBee(device = "/dev/ttyUSB0", genericDevicePlugin = false):
+    local mixin =
+      if genericDevicePlugin
+      then
+        self.withContainerMixin(container.resources.withLimitsMixin({ "devic.es/serial": 1 }))
+          + self.withDeploymentMixin(deployment.spec.template.spec.securityContext.withSupplementalGroups([20]))
+      else
+        self.withContainerMixin(container.securityContext.withPrivileged(true));
+    mixin
+      + self.withContainerMixin(container.withVolumeMountsMixin([
+        volumeMount.new("zigbee", device),
+      ]))
+      + self.withDeploymentMixin(deployment.spec.template.spec.withVolumesMixin([
+        volume.fromHostPath("zigbee", device) + volume.hostPath.withType("CharDevice"),
+      ])),
 }
