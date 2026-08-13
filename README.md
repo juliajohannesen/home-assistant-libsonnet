@@ -32,8 +32,8 @@ environment.new("home-assistant", "home-assistant", meta.apiServer)
       + {
         local root = self,
 
-        homeAssistant+:: {
-          ingressRoute:: ingressRoute.new("home-assistant-ingress-route")
+        homeAssistant+: {
+          ingressRoute: ingressRoute.new("home-assistant-ingress-route")
             + ingressRoute.spec.withEntryPoints([ "web", "websecure" ])
             + ingressRoute.spec.withTLS()
             + ingressRoute.spec.withRoutes([
@@ -46,8 +46,6 @@ environment.new("home-assistant", "home-assistant", meta.apiServer)
                 ])
             ]),
         },
-
-        homeAssistantIngressRoute: root.homeAssistant.ingressRoute,
       }
   )
 ```

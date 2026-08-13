@@ -123,8 +123,8 @@ local volumeMount = k.core.v1.volumeMount;
       }
     },
 
-    mqtt:: {
-      configMap:: configMap.new("mosquitto-config", {
+    mqtt: {
+      configMap: configMap.new("mosquitto-config", {
         local renderField = function(key, value)
           if std.isArray(value)
           then std.join("\n", std.map(function(v) "%s %s" % [key, std.toString(v)], value))
@@ -155,7 +155,7 @@ local volumeMount = k.core.v1.volumeMount;
           volumeMount.new("data", "/mosquitto/data"),
         ]),
 
-      deployment:: deployment.new("mosquitto", replicas=1, containers=[root.mqtt.container])
+      deployment: deployment.new("mosquitto", replicas=1, containers=[root.mqtt.container])
         + deployment.spec.template.spec.withVolumes([
           volume.withName("config") + volume.configMap.withName("mosquitto-config"),
           std.get({
@@ -169,13 +169,9 @@ local volumeMount = k.core.v1.volumeMount;
           then deployment.spec.template.spec.withNodeSelector(nodeSelector)
           else {},
 
-      service:: k.util.serviceFor(root.mqtt.deployment)
+      service: k.util.serviceFor(root.mqtt.deployment)
         + service.spec.withType("ClusterIP"),
     },
-
-    mosquittoConfigMap: root.mqtt.configMap,
-    mosquittoDeployment: root.mqtt.deployment,
-    mosquittoService: root.mqtt.service,
   },
 
   local withConfigMixin(mixin) = { _config+:: { mosquitto+:: mixin } },
@@ -200,10 +196,10 @@ local volumeMount = k.core.v1.volumeMount;
 
   withContainerMixin(mixin):: {
     local root = self,
-    mqtt+:: { container+:: utils.provideRoot(root, mixin) },
+    mqtt+: { container+:: utils.provideRoot(root, mixin) },
   },
   withDeploymentMixin(mixin):: {
     local root = self,
-    mqtt+:: { deployment+:: utils.provideRoot(root, mixin) },
+    mqtt+: { deployment+: utils.provideRoot(root, mixin) },
   },
 }

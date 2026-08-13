@@ -36,8 +36,8 @@ local volumeMount = k.core.v1.volumeMount;
       }
     },
 
-    frigate:: {
-      configMap:: configMap.new("frigate-config", {
+    frigate: {
+      configMap: configMap.new("frigate-config", {
         "config.yml": std.manifestYamlDoc(root._config.frigate.config, quote_keys=false),
       }),
 
@@ -71,7 +71,7 @@ local volumeMount = k.core.v1.volumeMount;
           else
             {},
 
-      deployment:: deployment.new("frigate", replicas=1, containers=[root.frigate.container])
+      deployment: deployment.new("frigate", replicas=1, containers=[root.frigate.container])
         + deployment.spec.template.spec.withVolumes([
           volume.withName("config") + volume.configMap.withName("frigate-config"),
           std.get({
@@ -106,13 +106,9 @@ local volumeMount = k.core.v1.volumeMount;
           else
             {},
 
-      service:: k.util.serviceFor(root.frigate.deployment)
+      service: k.util.serviceFor(root.frigate.deployment)
         + service.spec.withType("ClusterIP"),
     },
-
-    frigateConfigMap: root.frigate.configMap,
-    frigateDeployment: root.frigate.deployment,
-    frigateService: root.frigate.service,
   },
 
   local withConfigMixin(mixin) = {
@@ -151,14 +147,14 @@ local volumeMount = k.core.v1.volumeMount;
 
   withContainerMixin(mixin): {
     local root = self,
-    frigate+:: {
+    frigate+: {
       container+:: utils.provideRoot(root, mixin),
     },
   },
   withDeploymentMixin(mixin): {
     local root = self,
-    frigate+:: {
-      deployment+:: utils.provideRoot(root, mixin),
+    frigate+: {
+      deployment+: utils.provideRoot(root, mixin),
     },
   },
 

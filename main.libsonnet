@@ -1,4 +1,5 @@
 local k = import "./_k.libsonnet";
+local utils = import "./_utils.libsonnet";
 
 local deployment = k.apps.v1.deployment;
 local container = k.core.v1.container;
@@ -26,7 +27,7 @@ local volumeMount = k.core.v1.volumeMount;
       }
     },
 
-    homeAssistant:: {
+    homeAssistant: {
       container:: container.new("home-assistant", root._config.homeAssistant.image)
         + container.withPorts([
           containerPort.newNamed(root._config.homeAssistant.ports.web, "web"),
@@ -36,7 +37,7 @@ local volumeMount = k.core.v1.volumeMount;
           volumeMount.new("localtime", "/etc/localtime", readOnly=true),
         ]),
 
-      deployment:: deployment.new("home-assistant", replicas=1, containers=[root.homeAssistant.container])
+      deployment: deployment.new("home-assistant", replicas=1, containers=[root.homeAssistant.container])
         + deployment.spec.template.spec.withHostNetwork(true)
         + deployment.spec.template.spec.withDnsPolicy("ClusterFirstWithHostNet")
         + deployment.spec.template.spec.withVolumes([
@@ -52,15 +53,11 @@ local volumeMount = k.core.v1.volumeMount;
           then deployment.spec.template.spec.withNodeSelector(node.selector)
           else {},
 
-      service:: k.util.serviceFor(root.homeAssistant.deployment)
+      service: k.util.serviceFor(root.homeAssistant.deployment)
         + service.spec.withType("ClusterIP"),
       
       assert self.deployment.spec.replicas == 1 : "homeassistant can only run with a single replica- plesae do not try to override this",
     },
-
-    homeAssistantDeployment: root.homeAssistant.deployment,
-
-    homeAssistantSerivce: root.homeAssistant.service,
   },
 
   local withConfigMixin(mixin) = { _config+:: { homeAssistant+:: mixin } },
@@ -85,15 +82,15 @@ local volumeMount = k.core.v1.volumeMount;
 
   withContainerMixin(mixin):: {
     local root = self,
-    homeAssistant+:: {
-      container+:: if std.isFunction(mixin) then mixin(root) else mixin,
+    homeAssistant+: {
+      container+:: utils.provideRoot(root, mixin),
     },
   },
 
   withDeploymentMixin(mixin):: {
     local root = self,
-    homeAssistant+:: {
-      deployment+:: if std.isFunction(mixin) then mixin(root) else mixin,
+    homeAssistant+: {
+      deployment+: utils.provideRoot(root, mixin),
     },
   },
 
